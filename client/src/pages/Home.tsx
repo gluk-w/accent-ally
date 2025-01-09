@@ -81,7 +81,7 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div className="space-y-2">
               <h1 className="text-2xl font-bold text-foreground">
-                Text Processor
+                Speak Like Sam
               </h1>
               <p className="text-sm text-muted-foreground">
                 Enter your text below and press Cmd+Enter or click the arrow to process.
