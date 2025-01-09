@@ -21,12 +21,14 @@ import { Label } from "@/components/ui/label";
 interface Settings {
   apiKey: string;
   language: string;
+  apiEndpoint: string;
 }
 
 export function Settings() {
   const [settings, setSettings] = useState<Settings>({
     apiKey: '',
-    language: 'american'
+    language: 'american',
+    apiEndpoint: 'https://api.example.com/process' // Default API endpoint
   });
 
   // Load settings from localStorage on mount
@@ -56,6 +58,15 @@ export function Settings() {
           <DialogTitle>Settings</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="api-endpoint">API Endpoint</Label>
+            <Input
+              id="api-endpoint"
+              value={settings.apiEndpoint}
+              onChange={(e) => updateSettings({ apiEndpoint: e.target.value })}
+              placeholder="Enter API endpoint URL"
+            />
+          </div>
           <div className="space-y-2">
             <Label htmlFor="api-key">API Key</Label>
             <Input

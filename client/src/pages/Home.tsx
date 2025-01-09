@@ -16,7 +16,11 @@ export default function Home() {
       // Get settings from localStorage
       const settings = JSON.parse(localStorage.getItem('textProcessorSettings') || '{}');
 
-      const response = await fetch("/api/process", {
+      if (!settings.apiEndpoint) {
+        throw new Error("Please configure the API endpoint in settings");
+      }
+
+      const response = await fetch(settings.apiEndpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -29,7 +33,7 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to process text");
+        throw new Error(await response.text() || "Failed to process text");
       }
 
       return response.json();
@@ -41,7 +45,7 @@ export default function Home() {
       });
       setText(""); // Clear the textarea
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: "Error",
         description: error.message,
