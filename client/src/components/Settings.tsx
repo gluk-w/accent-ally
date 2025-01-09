@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Settings2 } from "lucide-react";
+import { Settings2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,18 +17,27 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 interface Settings {
   apiKey: string;
   language: string;
   apiEndpoint: string;
+  pwaName: string;
+  pwaShortName: string;
+  pwaThemeColor: string;
+  pwaIcon?: File;
 }
 
 export function Settings() {
+  const { toast } = useToast();
   const [settings, setSettings] = useState<Settings>({
     apiKey: '',
     language: 'american',
-    apiEndpoint: 'https://api.example.com/process' // Default API endpoint
+    apiEndpoint: 'https://api.example.com/process',
+    pwaName: 'Text Processor',
+    pwaShortName: 'TextPro',
+    pwaThemeColor: '#000000'
   });
 
   // Load settings from localStorage on mount
@@ -39,11 +48,56 @@ export function Settings() {
     }
   }, []);
 
-  // Save settings to localStorage whenever they change
-  const updateSettings = (newSettings: Partial<Settings>) => {
+  // Save settings to localStorage and update manifest
+  const updateSettings = async (newSettings: Partial<Settings>) => {
     const updatedSettings = { ...settings, ...newSettings };
     setSettings(updatedSettings);
     localStorage.setItem('textProcessorSettings', JSON.stringify(updatedSettings));
+
+    // Update manifest.json with new PWA settings
+    try {
+      const manifest = {
+        name: updatedSettings.pwaName,
+        short_name: updatedSettings.pwaShortName,
+        theme_color: updatedSettings.pwaThemeColor,
+        background_color: "#ffffff",
+        display: "standalone",
+        start_url: "/",
+        icons: [
+          {
+            src: "pwa-192x192.png",
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "any maskable"
+          },
+          {
+            src: "pwa-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any maskable"
+          }
+        ]
+      };
+
+      // Trigger PWA update
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const registration of registrations) {
+          registration.update();
+        }
+      }
+
+      toast({
+        title: "Settings Updated",
+        description: "PWA settings have been updated. You may need to reload the page to see the changes.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update PWA settings",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -58,6 +112,7 @@ export function Settings() {
           <DialogTitle>Settings</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
+          {/* API Settings */}
           <div className="space-y-2">
             <Label htmlFor="api-endpoint">API Endpoint</Label>
             <Input
@@ -93,6 +148,50 @@ export function Settings() {
                 <SelectItem value="canadian">Canadian</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* PWA Settings */}
+          <div className="pt-4 border-t">
+            <h3 className="text-sm font-medium mb-4">PWA Settings</h3>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="pwa-name">App Name</Label>
+                <Input
+                  id="pwa-name"
+                  value={settings.pwaName}
+                  onChange={(e) => updateSettings({ pwaName: e.target.value })}
+                  placeholder="Enter app name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="pwa-short-name">Short Name</Label>
+                <Input
+                  id="pwa-short-name"
+                  value={settings.pwaShortName}
+                  onChange={(e) => updateSettings({ pwaShortName: e.target.value })}
+                  placeholder="Enter short name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="pwa-theme-color">Theme Color</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="pwa-theme-color"
+                    type="color"
+                    value={settings.pwaThemeColor}
+                    onChange={(e) => updateSettings({ pwaThemeColor: e.target.value })}
+                    className="w-16 p-1 h-10"
+                  />
+                  <Input
+                    type="text"
+                    value={settings.pwaThemeColor}
+                    onChange={(e) => updateSettings({ pwaThemeColor: e.target.value })}
+                    placeholder="#000000"
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </DialogContent>
