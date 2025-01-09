@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { Settings } from "@/components/Settings";
 
 export default function Home() {
   const [text, setText] = useState("");
@@ -12,12 +13,19 @@ export default function Home() {
 
   const mutation = useMutation({
     mutationFn: async (text: string) => {
+      // Get settings from localStorage
+      const settings = JSON.parse(localStorage.getItem('textProcessorSettings') || '{}');
+
       const response = await fetch("/api/process", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(settings.apiKey && { "Authorization": `Bearer ${settings.apiKey}` })
         },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ 
+          text,
+          language: settings.language || 'american'
+        }),
       });
 
       if (!response.ok) {
@@ -66,13 +74,16 @@ export default function Home() {
     <div className="min-h-screen w-full flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-2xl">
         <CardContent className="pt-6 space-y-4">
-          <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-foreground">
-              Text Processor
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Enter your text below and press Cmd+Enter or click the arrow to process.
-            </p>
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold text-foreground">
+                Text Processor
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Enter your text below and press Cmd+Enter or click the arrow to process.
+              </p>
+            </div>
+            <Settings />
           </div>
 
           <div className="space-y-4">
