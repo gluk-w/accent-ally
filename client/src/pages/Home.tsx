@@ -1,33 +1,28 @@
 import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Loader2, ArrowRight, Trash2 } from "lucide-react";
+import { Loader2, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Settings } from "@/components/Settings";
-import { db } from "@/lib/db";
-
-interface TextEntry {
-  id?: number;
-  originalText: string;
-  newText: string;
-  explanation: string;
-  timestamp: number;
-}
+import { HistoryList } from "@/components/HistoryList";
+import { TextEntry } from "@/types/history";
+import { useHistoryService } from "@/lib/services/historyService";
 
 export default function Home() {
   const [text, setText] = useState("");
   const { toast } = useToast();
   const [entries, setEntries] = useState<TextEntry[]>([]);
+  const historyService = useHistoryService();
 
   // Load entries from IndexedDB
   useEffect(() => {
     const loadEntries = async () => {
       try {
-        const loadedEntries = await db.getAllEntries();
-        setEntries(loadedEntries.sort((a, b) => b.timestamp - a.timestamp));
+        const loadedEntries = await historyService.getAllEntries();
+        setEntries(loadedEntries);
       } catch (error) {
         console.error("Failed to load entries:", error);
       }
@@ -66,11 +61,8 @@ export default function Home() {
         timestamp: Date.now(),
       };
 
-      await db.addEntry(entry);
-
-      // Update local state
-      const newEntries = await db.getAllEntries();
-      setEntries(newEntries.sort((a, b) => b.timestamp - a.timestamp));
+      const updatedEntries = await historyService.addEntry(entry);
+      setEntries(updatedEntries);
 
       return data;
     },
@@ -92,20 +84,10 @@ export default function Home() {
 
   const handleDelete = async (id: number) => {
     try {
-      await db.deleteEntry(id);
-      // Update local state after deletion
-      const newEntries = await db.getAllEntries();
-      setEntries(newEntries.sort((a, b) => b.timestamp - a.timestamp));
-      toast({
-        title: "Deleted",
-        description: "History item removed successfully",
-      });
+      const updatedEntries = await historyService.deleteEntry(id);
+      setEntries(updatedEntries);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete history item",
-        variant: "destructive",
-      });
+      console.error("Failed to delete entry:", error);
     }
   };
 
@@ -170,56 +152,7 @@ export default function Home() {
         </CardContent>
       </Card>
 
-      {/* History Section */}
-      {entries.length > 0 && (
-        <Card className="w-full max-w-2xl mx-auto">
-          <CardContent className="pt-6">
-            <h2 className="text-xl font-bold mb-4">History</h2>
-            <div className="space-y-4">
-              <AnimatePresence initial={false}>
-                {entries.map((entry) => (
-                  <motion.div
-                    key={entry.id}
-                    initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                    animate={{ opacity: 1, height: "auto", marginBottom: 16 }}
-                    exit={{
-                      opacity: 0,
-                      height: 0,
-                      marginBottom: 0,
-                      transition: { duration: 0.2 }
-                    }}
-                    className="border rounded-lg p-4 space-y-2 relative group"
-                  >
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                      onClick={() => entry.id && handleDelete(entry.id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                    <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">Original:</p>
-                      <p className="text-sm">{entry.originalText}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">Corrected:</p>
-                      <p className="text-sm font-medium">{entry.newText}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">Explanation:</p>
-                      <p className="text-sm">{entry.explanation}</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(entry.timestamp).toLocaleString()}
-                    </p>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <HistoryList entries={entries} onDelete={handleDelete} />
     </div>
   );
 }
