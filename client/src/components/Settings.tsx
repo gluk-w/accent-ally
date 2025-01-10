@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Settings2, Upload } from "lucide-react";
+import { Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,23 +20,18 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 
 interface Settings {
-  apiKey: string;
   language: string;
-  apiEndpoint: string;
   pwaName: string;
   pwaShortName: string;
   pwaThemeColor: string;
-  pwaIcon?: File;
 }
 
 export function Settings() {
   const { toast } = useToast();
   const [settings, setSettings] = useState<Settings>({
-    apiKey: '',
     language: 'american',
-    apiEndpoint: 'https://api.example.com/process',
-    pwaName: 'Text Processor',
-    pwaShortName: 'TextPro',
+    pwaName: 'LocalTone',
+    pwaShortName: 'LocalTone',
     pwaThemeColor: '#000000'
   });
 
@@ -89,12 +84,12 @@ export function Settings() {
 
       toast({
         title: "Settings Updated",
-        description: "PWA settings have been updated. You may need to reload the page to see the changes.",
+        description: "Settings have been updated successfully.",
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update PWA settings",
+        description: "Failed to update settings",
         variant: "destructive",
       });
     }
@@ -112,26 +107,6 @@ export function Settings() {
           <DialogTitle>Settings</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
-          {/* API Settings */}
-          <div className="space-y-2">
-            <Label htmlFor="api-endpoint">API Endpoint</Label>
-            <Input
-              id="api-endpoint"
-              value={settings.apiEndpoint}
-              onChange={(e) => updateSettings({ apiEndpoint: e.target.value })}
-              placeholder="Enter API endpoint URL"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="api-key">API Key</Label>
-            <Input
-              id="api-key"
-              type="password"
-              value={settings.apiKey}
-              onChange={(e) => updateSettings({ apiKey: e.target.value })}
-              placeholder="Enter your API key"
-            />
-          </div>
           <div className="space-y-2">
             <Label htmlFor="language">Language Variant</Label>
             <Select

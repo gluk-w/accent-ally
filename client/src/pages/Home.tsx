@@ -1,30 +1,47 @@
 import { useState, useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Settings } from "@/components/Settings";
+import { db } from "@/lib/db";
+
+interface TextEntry {
+  id?: number;
+  originalText: string;
+  newText: string;
+  explanation: string;
+  timestamp: number;
+}
 
 export default function Home() {
   const [text, setText] = useState("");
   const { toast } = useToast();
+  const [entries, setEntries] = useState<TextEntry[]>([]);
+
+  // Load entries from IndexedDB
+  useEffect(() => {
+    const loadEntries = async () => {
+      try {
+        const loadedEntries = await db.getAllEntries();
+        setEntries(loadedEntries.sort((a, b) => b.timestamp - a.timestamp));
+      } catch (error) {
+        console.error("Failed to load entries:", error);
+      }
+    };
+    loadEntries();
+  }, []);
 
   const mutation = useMutation({
     mutationFn: async (text: string) => {
-      // Get settings from localStorage
       const settings = JSON.parse(localStorage.getItem('textProcessorSettings') || '{}');
 
-      if (!settings.apiEndpoint) {
-        throw new Error("Please configure the API endpoint in settings");
-      }
-
-      const response = await fetch(settings.apiEndpoint, {
+      const response = await fetch("https://api.localtone.ai", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(settings.apiKey && { "Authorization": `Bearer ${settings.apiKey}` })
         },
         body: JSON.stringify({ 
           text,
@@ -36,7 +53,23 @@ export default function Home() {
         throw new Error(await response.text() || "Failed to process text");
       }
 
-      return response.json();
+      const data = await response.json();
+
+      // Store in IndexedDB
+      const entry: Omit<TextEntry, 'id'> = {
+        originalText: text,
+        newText: data.new_text,
+        explanation: data.explanation,
+        timestamp: Date.now(),
+      };
+
+      await db.addEntry(entry);
+
+      // Update local state
+      const newEntries = await db.getAllEntries();
+      setEntries(newEntries.sort((a, b) => b.timestamp - a.timestamp));
+
+      return data;
     },
     onSuccess: (data) => {
       toast({
@@ -75,13 +108,13 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-2xl">
+    <div className="min-h-screen w-full flex flex-col bg-background p-4 gap-4">
+      <Card className="w-full max-w-2xl mx-auto">
         <CardContent className="pt-6 space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-2">
               <h1 className="text-2xl font-bold text-foreground">
-                Speak Like Sam
+                LocalTone
               </h1>
               <p className="text-sm text-muted-foreground">
                 Enter your text below and press Cmd+Enter or click the arrow to process.
@@ -115,6 +148,39 @@ export default function Home() {
           </div>
         </CardContent>
       </Card>
+
+      {/* History Section */}
+      {entries.length > 0 && (
+        <Card className="w-full max-w-2xl mx-auto">
+          <CardContent className="pt-6">
+            <h2 className="text-xl font-bold mb-4">History</h2>
+            <div className="space-y-4">
+              {entries.map((entry) => (
+                <div
+                  key={entry.id}
+                  className="border rounded-lg p-4 space-y-2"
+                >
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Original:</p>
+                    <p className="text-sm">{entry.originalText}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Corrected:</p>
+                    <p className="text-sm font-medium">{entry.newText}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Explanation:</p>
+                    <p className="text-sm">{entry.explanation}</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(entry.timestamp).toLocaleString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 {
-  "name": "Text Processor",
-  "short_name": "TextPro",
-  "description": "A responsive text processing application",
+  "name": "LocalTone",
+  "short_name": "LocalTone",
+  "description": "Adopt a local American tone",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
