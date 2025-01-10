@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Loader2, ArrowRight, Trash2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
@@ -175,33 +176,46 @@ export default function Home() {
           <CardContent className="pt-6">
             <h2 className="text-xl font-bold mb-4">History</h2>
             <div className="space-y-4">
-              {entries.map((entry) => (
-                <div key={entry.id} className="border rounded-lg p-4 space-y-2 relative">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2 text-muted-foreground hover:text-destructive"
-                    onClick={() => entry.id && handleDelete(entry.id)}
+              <AnimatePresence initial={false}>
+                {entries.map((entry) => (
+                  <motion.div
+                    key={entry.id}
+                    initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                    animate={{ opacity: 1, height: "auto", marginBottom: 16 }}
+                    exit={{
+                      opacity: 0,
+                      height: 0,
+                      marginBottom: 0,
+                      transition: { duration: 0.2 }
+                    }}
+                    className="border rounded-lg p-4 space-y-2 relative"
                   >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Original:</p>
-                    <p className="text-sm">{entry.originalText}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Corrected:</p>
-                    <p className="text-sm font-medium">{entry.newText}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Explanation:</p>
-                    <p className="text-sm">{entry.explanation}</p>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(entry.timestamp).toLocaleString()}
-                  </p>
-                </div>
-              ))}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-2 right-2 text-muted-foreground hover:text-destructive"
+                      onClick={() => entry.id && handleDelete(entry.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">Original:</p>
+                      <p className="text-sm">{entry.originalText}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">Corrected:</p>
+                      <p className="text-sm font-medium">{entry.newText}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">Explanation:</p>
+                      <p className="text-sm">{entry.explanation}</p>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(entry.timestamp).toLocaleString()}
+                    </p>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
           </CardContent>
         </Card>
