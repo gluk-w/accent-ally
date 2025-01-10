@@ -31,31 +31,82 @@ export function HistoryItem({ entry, onDelete }: HistoryItemProps) {
         <Trash2 className="h-4 w-4 text-destructive" />
       </Button>
 
-      {/* User message */}
-      <div className="flex items-start gap-3">
+      {/* User message with animation */}
+      <motion.div 
+        className="flex items-start gap-3"
+        initial={{ x: -20, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ 
+          type: "spring",
+          stiffness: 500,
+          damping: 30,
+          duration: 0.3 
+        }}
+      >
         <Avatar className="h-8 w-8">
           <AvatarFallback className="bg-primary/10">
             <User className="h-4 w-4 text-primary" />
           </AvatarFallback>
         </Avatar>
-        <div className="flex-1">
+        <motion.div 
+          className="flex-1"
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ 
+            type: "spring",
+            stiffness: 500,
+            damping: 25,
+            delay: 0.1 
+          }}
+        >
           <div className="bg-secondary/50 rounded-2xl rounded-tl-sm p-3 inline-block max-w-[85%]">
             <p className="text-sm">{entry.originalText}</p>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
-      {/* AI Response */}
-      <div className="space-y-1 pl-11">
+      {/* AI Response with animation */}
+      <motion.div 
+        className="space-y-1 pl-11"
+        initial={{ x: 20, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ 
+          type: "spring",
+          stiffness: 400,
+          damping: 25,
+          delay: 0.2 
+        }}
+      >
         <p className="text-sm font-medium">{entry.newText}</p>
-        <div className="text-sm text-muted-foreground border-l-2 pl-2 mt-2">
+        <motion.div 
+          className="text-sm text-muted-foreground border-l-2 pl-2 mt-2"
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: "auto", opacity: 1 }}
+          transition={{ 
+            height: {
+              type: "spring",
+              stiffness: 500,
+              damping: 30,
+              delay: 0.3
+            },
+            opacity: {
+              duration: 0.2,
+              delay: 0.4
+            }
+          }}
+        >
           <p>{entry.explanation}</p>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
-      <p className="text-xs text-muted-foreground pl-11">
+      <motion.p 
+        className="text-xs text-muted-foreground pl-11"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2, delay: 0.4 }}
+      >
         {new Date(entry.timestamp).toLocaleString()}
-      </p>
+      </motion.p>
     </motion.div>
   );
 }
