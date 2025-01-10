@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { Loader2, ArrowRight } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { Loader2, ArrowRight, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,27 +36,29 @@ export default function Home() {
 
   const mutation = useMutation({
     mutationFn: async (text: string) => {
-      const settings = JSON.parse(localStorage.getItem('textProcessorSettings') || '{}');
+      const settings = JSON.parse(
+        localStorage.getItem("textProcessorSettings") || "{}",
+      );
 
       const response = await fetch("https://api.localtone.ai", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           text,
-          language: settings.language || 'american'
+          language: settings.language || "american",
         }),
       });
 
       if (!response.ok) {
-        throw new Error(await response.text() || "Failed to process text");
+        throw new Error((await response.text()) || "Failed to process text");
       }
 
       const data = await response.json();
 
       // Store in IndexedDB
-      const entry: Omit<TextEntry, 'id'> = {
+      const entry: Omit<TextEntry, "id"> = {
         originalText: text,
         newText: data.new_text,
         explanation: data.explanation,
@@ -87,6 +89,25 @@ export default function Home() {
     },
   });
 
+  const handleDelete = async (id: number) => {
+    try {
+      await db.deleteEntry(id);
+      // Update local state after deletion
+      const newEntries = await db.getAllEntries();
+      setEntries(newEntries.sort((a, b) => b.timestamp - a.timestamp));
+      toast({
+        title: "Deleted",
+        description: "History item removed successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete history item",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Handle keyboard shortcut
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -113,11 +134,10 @@ export default function Home() {
         <CardContent className="pt-6 space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold text-foreground">
-                LocalTone
-              </h1>
+              <h1 className="text-2xl font-bold text-foreground">LocalTone</h1>
               <p className="text-sm text-muted-foreground">
-                Enter your text below and press Cmd+Enter or click the arrow to process.
+                Enter your text below and press Cmd+Enter or click the arrow to
+                process.
               </p>
             </div>
             <Settings />
@@ -156,10 +176,15 @@ export default function Home() {
             <h2 className="text-xl font-bold mb-4">History</h2>
             <div className="space-y-4">
               {entries.map((entry) => (
-                <div
-                  key={entry.id}
-                  className="border rounded-lg p-4 space-y-2"
-                >
+                <div key={entry.id} className="border rounded-lg p-4 space-y-2 relative">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2 text-muted-foreground hover:text-destructive"
+                    onClick={() => entry.id && handleDelete(entry.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">Original:</p>
                     <p className="text-sm">{entry.originalText}</p>
