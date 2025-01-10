@@ -41,7 +41,7 @@ export default function Home() {
         localStorage.getItem("textProcessorSettings") || "{}",
       );
 
-      const response = await fetch("https://api.localtone.ai", {
+      const response = await fetch("https://local-tone.admin-5cb.workers.dev/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -188,15 +188,15 @@ export default function Home() {
                       marginBottom: 0,
                       transition: { duration: 0.2 }
                     }}
-                    className="border rounded-lg p-4 space-y-2 relative"
+                    className="border rounded-lg p-4 space-y-2 relative group"
                   >
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute top-2 right-2 text-muted-foreground hover:text-destructive"
+                      className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-10"
                       onClick={() => entry.id && handleDelete(entry.id)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">Original:</p>
