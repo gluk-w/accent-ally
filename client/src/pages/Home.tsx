@@ -11,6 +11,8 @@ import { HistoryList } from "@/components/HistoryList";
 import { TextEntry } from "@/types/history";
 import { useHistoryService } from "@/lib/services/historyService";
 
+const MAX_CHARS = 1000;
+
 export default function Home() {
   const [text, setText] = useState("");
   const [context, setContext] = useState("");
@@ -35,7 +37,7 @@ export default function Home() {
   const mutation = useMutation({
     mutationFn: async (text: string) => {
       const settings = JSON.parse(
-        localStorage.getItem("localToneSettings") || "{}",
+        localStorage.getItem("textProcessorSettings") || "{}",
       );
 
       const response = await fetch("https://api.localtone.ai", {
@@ -116,6 +118,20 @@ export default function Home() {
     }
   };
 
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    if (value.length <= MAX_CHARS) {
+      setText(value);
+    }
+  };
+
+  const handleContextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    if (value.length <= MAX_CHARS) {
+      setContext(value);
+    }
+  };
+
   return (
     <div className="min-h-screen w-full flex flex-col bg-background p-4 gap-4">
       <Card className="w-full max-w-2xl mx-auto">
@@ -132,13 +148,24 @@ export default function Home() {
           </div>
 
           <div className="space-y-4">
-            <Textarea
-              placeholder="Type your text here..."
-              className="min-h-[200px] resize-none"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              disabled={mutation.isPending}
-            />
+            <div className="space-y-1">
+              <Textarea
+                placeholder="Type your text here..."
+                className="min-h-[200px] resize-none"
+                value={text}
+                onChange={handleTextChange}
+                disabled={mutation.isPending}
+              />
+              <div 
+                className={`text-xs flex justify-end ${
+                  text.length > MAX_CHARS * 0.9 
+                    ? "text-destructive" 
+                    : "text-muted-foreground"
+                }`}
+              >
+                {text.length}/{MAX_CHARS}
+              </div>
+            </div>
 
             <AnimatePresence>
               {showContext && (
@@ -146,14 +173,24 @@ export default function Home() {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
+                  className="space-y-1"
                 >
                   <Textarea
                     placeholder="Add context to help with the tone adjustment..."
                     className="min-h-[100px] resize-none"
                     value={context}
-                    onChange={(e) => setContext(e.target.value)}
+                    onChange={handleContextChange}
                     disabled={mutation.isPending}
                   />
+                  <div 
+                    className={`text-xs flex justify-end ${
+                      context.length > MAX_CHARS * 0.9 
+                        ? "text-destructive" 
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {context.length}/{MAX_CHARS}
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
