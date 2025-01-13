@@ -9,6 +9,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Request logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -27,11 +28,6 @@ app.use((req, res, next) => {
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
       log(logLine);
     }
   });
@@ -39,11 +35,15 @@ app.use((req, res, next) => {
   next();
 });
 
+// Server initialization with proper error handling
 (async () => {
   try {
     log('Starting server initialization...');
+
+    // Register API routes first
     const server = registerRoutes(app);
 
+    // Global error handling middleware
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       console.error('Server error:', err);
       const status = err.status || err.statusCode || 500;
@@ -51,14 +51,14 @@ app.use((req, res, next) => {
       res.status(status).json({ message });
     });
 
-    // Setup development environment with proper error handling
+    // Setup Vite or static serving based on environment
     if (process.env.NODE_ENV === "development") {
       try {
         log('Setting up Vite in development mode...');
         await setupVite(app, server);
-        log('Vite setup completed successfully');
+        log('Vite setup completed');
       } catch (error) {
-        console.error('Vite setup failed:', error);
+        console.error('Failed to setup Vite:', error);
         process.exit(1);
       }
     } else {
@@ -66,19 +66,20 @@ app.use((req, res, next) => {
       serveStatic(app);
     }
 
-    // Start server with proper error handling
+    // Start server
     const PORT = 5000;
     server.listen(PORT, "0.0.0.0", () => {
-      log(`Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
+      log(`Server listening on port ${PORT} in ${process.env.NODE_ENV} mode`);
     }).on('error', (error: any) => {
-      console.error('Server failed to start:', error);
+      console.error('Failed to start server:', error);
       process.exit(1);
     });
+
   } catch (error) {
-    console.error('Failed to initialize server:', error);
+    console.error('Server initialization failed:', error);
     process.exit(1);
   }
-})().catch((error) => {
-  console.error('Unhandled server initialization error:', error);
+})().catch(error => {
+  console.error('Unhandled server error:', error);
   process.exit(1);
 });

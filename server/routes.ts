@@ -2,11 +2,19 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 
 export function registerRoutes(app: Express): Server {
-  // Register API routes
+  // API routes
   app.post('/api/text-process', (req, res) => {
-    // This is a mock response since we're using the external API
-    // The actual processing happens in the frontend
-    res.json({ status: 'ok' });
+    try {
+      // This endpoint currently just acknowledges the request
+      // as the actual processing happens in the frontend
+      res.json({ status: 'ok' });
+    } catch (error) {
+      console.error('Text processing error:', error);
+      res.status(500).json({ 
+        status: 'error',
+        message: 'Failed to process text'
+      });
+    }
   });
 
   const httpServer = createServer(app);
