@@ -4,8 +4,65 @@ import { Env } from './types';
 // the newest Anthropic model is "claude-3-5-sonnet-20241022" which was released October 22, 2024
 const ANTHROPIC_MODEL = 'claude-3-5-sonnet-20241022';
 
+// Rate limiting configuration
+const RATE_LIMIT = 10; // requests per hour
+const HOUR_IN_MS = 60 * 60 * 1000;
+
+class RateLimiter {
+  private requests: Map<string, { count: number; resetTime: number }> = new Map();
+
+  isRateLimited(ip: string): boolean {
+    const now = Date.now();
+    const clientRequests = this.requests.get(ip);
+
+    // Clean up expired entries
+    if (clientRequests && now > clientRequests.resetTime) {
+      this.requests.delete(ip);
+    }
+
+    // If no previous requests or expired, create new entry
+    if (!this.requests.has(ip)) {
+      this.requests.set(ip, {
+        count: 1,
+        resetTime: now + HOUR_IN_MS,
+      });
+      return false;
+    }
+
+    // Check if rate limit exceeded
+    const entry = this.requests.get(ip)!;
+    if (entry.count >= RATE_LIMIT) {
+      return true;
+    }
+
+    // Increment request count
+    entry.count++;
+    return false;
+  }
+
+  getRemainingRequests(ip: string): number {
+    const entry = this.requests.get(ip);
+    if (!entry || Date.now() > entry.resetTime) {
+      return RATE_LIMIT;
+    }
+    return Math.max(0, RATE_LIMIT - entry.count);
+  }
+
+  getResetTime(ip: string): number | null {
+    const entry = this.requests.get(ip);
+    return entry ? entry.resetTime : null;
+  }
+}
+
+const rateLimiter = new RateLimiter();
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
+    // Extract client IP from CF headers or fallback to direct IP
+    const clientIP = request.headers.get('cf-connecting-ip') || 
+                    request.headers.get('x-real-ip') || 
+                    'unknown';
+
     // Handle CORS preflight requests
     if (request.method === 'OPTIONS') {
       return new Response(null, {
@@ -20,6 +77,27 @@ export default {
 
     if (request.method !== 'POST') {
       return new Response('Method not allowed', { status: 405 });
+    }
+
+    // Check rate limit
+    if (rateLimiter.isRateLimited(clientIP)) {
+      const resetTime = rateLimiter.getResetTime(clientIP);
+      return new Response(
+        JSON.stringify({
+          error: 'Rate limit exceeded',
+          resetTime,
+          message: 'Too many requests. Please try again later.',
+        }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'X-RateLimit-Remaining': '0',
+            ...(resetTime && { 'X-RateLimit-Reset': resetTime.toString() }),
+          },
+        }
+      );
     }
 
     try {
@@ -51,10 +129,18 @@ export default {
         messages: [{ role: 'user', content: userPrompt }],
       });
 
-      // Access the text content from the first content block
-      const content = response.content[0].text;
-      const [newText, explanation] = content.split('\n\n');
+      // Handle different content types from Claude 3.5's response
+      let responseContent = '';
+      for (const content of response.content) {
+        if (content.type === 'text') {
+          responseContent += content.text;
+        }
+      }
 
+      // Split the response into new text and explanation
+      const [newText, explanation] = responseContent.split('\n\n');
+
+      const remaining = rateLimiter.getRemainingRequests(clientIP);
       return new Response(
         JSON.stringify({
           new_text: newText.trim(),
@@ -64,6 +150,8 @@ export default {
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',
+            'X-RateLimit-Remaining': remaining.toString(),
+            'X-RateLimit-Limit': RATE_LIMIT.toString(),
           },
         }
       );
