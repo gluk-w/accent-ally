@@ -1,58 +1,9 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { Env } from './types';
+import { RateLimiter, RATE_LIMIT_HEADERS } from './rate';
 
 // the newest Anthropic model is "claude-3-5-sonnet-20241022" which was released October 22, 2024
 const ANTHROPIC_MODEL = 'claude-3-5-sonnet-20241022';
-
-// Rate limiting configuration
-const RATE_LIMIT = 10; // requests per hour
-const HOUR_IN_MS = 60 * 60 * 1000;
-
-class RateLimiter {
-  private requests: Map<string, { count: number; resetTime: number }> = new Map();
-
-  isRateLimited(ip: string): boolean {
-    const now = Date.now();
-    const clientRequests = this.requests.get(ip);
-
-    // Clean up expired entries
-    if (clientRequests && now > clientRequests.resetTime) {
-      this.requests.delete(ip);
-    }
-
-    // If no previous requests or expired, create new entry
-    if (!this.requests.has(ip)) {
-      this.requests.set(ip, {
-        count: 1,
-        resetTime: now + HOUR_IN_MS,
-      });
-      return false;
-    }
-
-    // Check if rate limit exceeded
-    const entry = this.requests.get(ip)!;
-    if (entry.count >= RATE_LIMIT) {
-      return true;
-    }
-
-    // Increment request count
-    entry.count++;
-    return false;
-  }
-
-  getRemainingRequests(ip: string): number {
-    const entry = this.requests.get(ip);
-    if (!entry || Date.now() > entry.resetTime) {
-      return RATE_LIMIT;
-    }
-    return Math.max(0, RATE_LIMIT - entry.count);
-  }
-
-  getResetTime(ip: string): number | null {
-    const entry = this.requests.get(ip);
-    return entry ? entry.resetTime : null;
-  }
-}
 
 const rateLimiter = new RateLimiter();
 
@@ -93,8 +44,8 @@ export default {
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',
-            'X-RateLimit-Remaining': '0',
-            ...(resetTime && { 'X-RateLimit-Reset': resetTime.toString() }),
+            [RATE_LIMIT_HEADERS.REMAINING]: '0',
+            ...(resetTime && { [RATE_LIMIT_HEADERS.RESET]: resetTime.toString() }),
           },
         }
       );
@@ -150,8 +101,8 @@ export default {
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',
-            'X-RateLimit-Remaining': remaining.toString(),
-            'X-RateLimit-Limit': RATE_LIMIT.toString(),
+            [RATE_LIMIT_HEADERS.REMAINING]: remaining.toString(),
+            [RATE_LIMIT_HEADERS.LIMIT]: '10',
           },
         }
       );
