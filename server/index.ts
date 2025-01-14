@@ -1,11 +1,13 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import { setupVite, serveStatic } from "./vite";
 
-// Ensure we're in development mode for Vite
+// Set default environment
 process.env.NODE_ENV = process.env.NODE_ENV || "development";
 
 const app = express();
+
+// Basic middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -13,37 +15,27 @@ app.use(express.urlencoded({ extended: false }));
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
 
   res.on("finish", () => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-      log(logLine);
+      const logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+      console.log(logLine);
     }
   });
 
   next();
 });
 
-// Server initialization with proper error handling
+// Initialize server with proper error handling
 (async () => {
   try {
-    log('Starting server initialization...');
+    console.log('Starting server initialization...');
 
-    // Register API routes first
+    // Register routes and create HTTP server
     const server = registerRoutes(app);
 
-    // Global error handling middleware
+    // Global error handler
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       console.error('Server error:', err);
       const status = err.status || err.statusCode || 500;
@@ -51,35 +43,34 @@ app.use((req, res, next) => {
       res.status(status).json({ message });
     });
 
-    // Setup Vite or static serving based on environment
+    // Setup Vite or static serving
     if (process.env.NODE_ENV === "development") {
-      try {
-        log('Setting up Vite in development mode...');
-        await setupVite(app, server);
-        log('Vite setup completed');
-      } catch (error) {
-        console.error('Failed to setup Vite:', error);
-        process.exit(1);
-      }
+      console.log('Setting up Vite for development...');
+      await setupVite(app, server);
     } else {
-      log('Setting up static serving for production...');
+      console.log('Setting up static file serving for production...');
       serveStatic(app);
     }
 
     // Start server
     const PORT = 5000;
     server.listen(PORT, "0.0.0.0", () => {
-      log(`Server listening on port ${PORT} in ${process.env.NODE_ENV} mode`);
-    }).on('error', (error: any) => {
-      console.error('Failed to start server:', error);
-      process.exit(1);
+      console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
     });
 
   } catch (error) {
     console.error('Server initialization failed:', error);
     process.exit(1);
   }
-})().catch(error => {
-  console.error('Unhandled server error:', error);
+})();
+
+// Handle unexpected errors
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (error) => {
+  console.error('Unhandled Rejection:', error);
   process.exit(1);
 });
