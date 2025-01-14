@@ -11,6 +11,8 @@ import { HistoryList } from "@/components/HistoryList";
 import { TextEntry } from "@/types/history";
 import { useHistoryService } from "@/lib/services/historyService";
 
+const MAX_CHARS = 1000;
+
 export default function Home() {
   const [text, setText] = useState("");
   const [context, setContext] = useState("");
@@ -31,6 +33,20 @@ export default function Home() {
     };
     loadEntries();
   }, []);
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    if (newValue.length <= MAX_CHARS) {
+      setText(newValue);
+    }
+  };
+
+  const handleContextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    if (newValue.length <= MAX_CHARS) {
+      setContext(newValue);
+    }
+  };
 
   const mutation = useMutation({
     mutationFn: async (text: string) => {
@@ -132,13 +148,18 @@ export default function Home() {
           </div>
 
           <div className="space-y-4">
-            <Textarea
-              placeholder="Type your text here..."
-              className="min-h-[200px] resize-none"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              disabled={mutation.isPending}
-            />
+            <div className="space-y-1">
+              <Textarea
+                placeholder="Type your text here..."
+                className="min-h-[200px] resize-none"
+                value={text}
+                onChange={handleTextChange}
+                disabled={mutation.isPending}
+              />
+              <p className="text-sm text-muted-foreground text-right">
+                {text.length}/{MAX_CHARS}
+              </p>
+            </div>
 
             <AnimatePresence>
               {showContext && (
@@ -147,13 +168,18 @@ export default function Home() {
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                 >
-                  <Textarea
-                    placeholder="Add context to help with the tone adjustment..."
-                    className="min-h-[100px] resize-none"
-                    value={context}
-                    onChange={(e) => setContext(e.target.value)}
-                    disabled={mutation.isPending}
-                  />
+                  <div className="space-y-1">
+                    <Textarea
+                      placeholder="Add context to help with the tone adjustment..."
+                      className="min-h-[100px] resize-none"
+                      value={context}
+                      onChange={handleContextChange}
+                      disabled={mutation.isPending}
+                    />
+                    <p className="text-sm text-muted-foreground text-right">
+                      {context.length}/{MAX_CHARS}
+                    </p>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
