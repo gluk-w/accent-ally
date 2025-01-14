@@ -13,6 +13,8 @@ import { useHistoryService } from "@/lib/services/historyService";
 
 const MAX_CHARS = 1000;
 
+const API_URL = import.meta.env.VITE_WORKER_URL || 'https://localtone-worker.your-subdomain.workers.dev';
+
 export default function Home() {
   const [text, setText] = useState("");
   const [context, setContext] = useState("");
@@ -51,10 +53,10 @@ export default function Home() {
   const mutation = useMutation({
     mutationFn: async (text: string) => {
       const settings = JSON.parse(
-        localStorage.getItem("localToneSettings") || "{}",
+        localStorage.getItem("textProcessorSettings") || "{}",
       );
 
-      const response = await fetch("https://api.localtone.ai", {
+      const response = await fetch(API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
