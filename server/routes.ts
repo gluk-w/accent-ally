@@ -4,13 +4,11 @@ import { createServer, type Server } from "http";
 import { db } from "@db";
 
 export function registerRoutes(app: Express): Server {
-  const apiRouter = Router();
-
-  // API routes
-  apiRouter.post('/process', async (req, res) => {
+  // Text processing endpoint
+  app.post('/api/process', async (req, res) => {
     try {
       const { text, context, language } = req.body;
-      
+
       if (!text) {
         return res.status(400).json({ message: 'Text is required' });
       }
@@ -25,9 +23,6 @@ export function registerRoutes(app: Express): Server {
       res.status(500).json({ message: 'Internal server error' });
     }
   });
-
-  // Mount API routes under /api prefix
-  app.use('/api', apiRouter);
 
   const httpServer = createServer(app);
   return httpServer;
