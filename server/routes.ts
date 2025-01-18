@@ -4,6 +4,11 @@ import { createServer, type Server } from "http";
 import { db } from "@db";
 
 export function registerRoutes(app: Express): Server {
+  // Health check endpoint
+  app.get('/api/health', (_req, res) => {
+    res.json({ status: 'ok' });
+  });
+
   // Text processing endpoint
   app.post('/api/process', async (req, res) => {
     try {
@@ -13,10 +18,13 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).json({ message: 'Text is required' });
       }
 
-      // TODO: Implement text processing logic here
+      // For now, just echo back the text
+      // TODO: Implement actual text processing
       res.json({ 
-        new_text: text, 
-        explanation: "Text processing not implemented yet" 
+        original_text: text,
+        processed_text: text,
+        context,
+        language
       });
     } catch (error) {
       console.error('Error processing text:', error);
