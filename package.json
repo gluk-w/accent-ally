@@ -5,6 +5,8 @@
   "license": "MIT",
   "scripts": {
     "api": "cd server && wrangler dev --port 5000 --upstream-protocol http --log-level info",
+    "client": "vite --host 0.0.0.0",
+    "dev": "concurrently \"npm run api\" \"npm run client\"",
     "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc",
