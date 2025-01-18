@@ -29,15 +29,15 @@ interface Settings {
 export function Settings() {
   const { toast } = useToast();
   const [settings, setSettings] = useState<Settings>({
-    language: 'american',
-    pwaName: 'LocalTone',
-    pwaShortName: 'LocalTone',
-    pwaThemeColor: '#000000'
+    language: "american",
+    pwaName: "LocalTone",
+    pwaShortName: "LocalTone",
+    pwaThemeColor: "#000000",
   });
 
   // Load settings from localStorage on mount
   useEffect(() => {
-    const savedSettings = localStorage.getItem('textProcessorSettings');
+    const savedSettings = localStorage.getItem("textProcessorSettings");
     if (savedSettings) {
       setSettings(JSON.parse(savedSettings));
     }
@@ -47,7 +47,10 @@ export function Settings() {
   const updateSettings = async (newSettings: Partial<Settings>) => {
     const updatedSettings = { ...settings, ...newSettings };
     setSettings(updatedSettings);
-    localStorage.setItem('textProcessorSettings', JSON.stringify(updatedSettings));
+    localStorage.setItem(
+      "textProcessorSettings",
+      JSON.stringify(updatedSettings),
+    );
 
     // Update manifest.json with new PWA settings
     try {
@@ -63,19 +66,19 @@ export function Settings() {
             src: "pwa-192x192.png",
             sizes: "192x192",
             type: "image/png",
-            purpose: "any maskable"
+            purpose: "any maskable",
           },
           {
             src: "pwa-512x512.png",
             sizes: "512x512",
             type: "image/png",
-            purpose: "any maskable"
-          }
-        ]
+            purpose: "any maskable",
+          },
+        ],
       };
 
       // Trigger PWA update
-      if ('serviceWorker' in navigator) {
+      if ("serviceWorker" in navigator) {
         const registrations = await navigator.serviceWorker.getRegistrations();
         for (const registration of registrations) {
           registration.update();
@@ -108,13 +111,13 @@ export function Settings() {
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="language">Language Variant</Label>
+            <Label htmlFor="language">Language</Label>
             <Select
               value={settings.language}
               onValueChange={(value) => updateSettings({ language: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select language variant" />
+                <SelectValue placeholder="Select language" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="american">American</SelectItem>
@@ -126,7 +129,8 @@ export function Settings() {
           </div>
 
           {/* PWA Settings */}
-          <div className="pt-4 border-t">
+
+          {/*<div className="pt-4 border-t">
             <h3 className="text-sm font-medium mb-4">PWA Settings</h3>
             <div className="space-y-4">
               <div className="space-y-2">
@@ -167,7 +171,7 @@ export function Settings() {
                 </div>
               </div>
             </div>
-          </div>
+          </div>*/}
         </div>
       </DialogContent>
     </Dialog>

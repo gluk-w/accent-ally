@@ -27,7 +27,12 @@ export default {
     }
 
     if (request.method !== 'POST') {
-      return new Response('Method not allowed', { status: 405 });
+      return new Response('Method not allowed', { 
+        status: 405,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+        }
+      });
     }
 
     // Check rate limit
@@ -55,7 +60,12 @@ export default {
       const { text, context, language = 'american' } = await request.json();
 
       if (!text) {
-        return new Response('Text is required', { status: 400 });
+        return new Response('Text is required', { 
+          status: 400,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+          }
+        });
       }
 
       const anthropic = new Anthropic({
