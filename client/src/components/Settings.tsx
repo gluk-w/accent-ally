@@ -52,39 +52,7 @@ export function Settings() {
       JSON.stringify(updatedSettings),
     );
 
-    // Update manifest.json with new PWA settings
     try {
-      const manifest = {
-        name: updatedSettings.pwaName,
-        short_name: updatedSettings.pwaShortName,
-        theme_color: updatedSettings.pwaThemeColor,
-        background_color: "#ffffff",
-        display: "standalone",
-        start_url: "/",
-        icons: [
-          {
-            src: "pwa-192x192.png",
-            sizes: "192x192",
-            type: "image/png",
-            purpose: "any maskable",
-          },
-          {
-            src: "pwa-512x512.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "any maskable",
-          },
-        ],
-      };
-
-      // Trigger PWA update
-      if ("serviceWorker" in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (const registration of registrations) {
-          registration.update();
-        }
-      }
-
       toast({
         title: "Settings Updated",
         description: "Settings have been updated successfully.",
@@ -128,9 +96,7 @@ export function Settings() {
             </Select>
           </div>
 
-          {/* PWA Settings */}
-
-          {/*<div className="pt-4 border-t">
+          <div className="pt-4 border-t">
             <h3 className="text-sm font-medium mb-4">PWA Settings</h3>
             <div className="space-y-4">
               <div className="space-y-2">
@@ -171,7 +137,7 @@ export function Settings() {
                 </div>
               </div>
             </div>
-          </div>*/}
+          </div>
         </div>
       </DialogContent>
     </Dialog>
