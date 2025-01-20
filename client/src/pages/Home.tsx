@@ -138,10 +138,9 @@ export default function Home() {
         <CardContent className="pt-6 space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold text-foreground">Accent Ally</h1>
               <p className="text-sm text-muted-foreground">
-                Enter your text below and press Cmd+Enter or click the arrow to
-                process.
+                Enter your phrase and press Cmd+Enter or click the arrow to
+                correct it.
               </p>
             </div>
             <Settings />
@@ -151,7 +150,7 @@ export default function Home() {
             <div className="space-y-1">
               <Textarea
                 placeholder="Type your text here..."
-                className="min-h-[200px] resize-none"
+                className="min-h-[100px] resize-none"
                 value={text}
                 onChange={handleTextChange}
                 disabled={mutation.isPending}
@@ -170,7 +169,7 @@ export default function Home() {
                 >
                   <div className="space-y-1">
                     <Textarea
-                      placeholder="Add context to help with the tone adjustment..."
+                      placeholder="Add context to help understand your phrase..."
                       className="min-h-[100px] resize-none"
                       value={context}
                       onChange={handleContextChange}
