@@ -30,14 +30,14 @@ export function Settings() {
   const { toast } = useToast();
   const [settings, setSettings] = useState<Settings>({
     language: 'american',
-    pwaName: 'LocalTone',
-    pwaShortName: 'LocalTone',
+    pwaName: 'AccentAlly',
+    pwaShortName: 'AccentAlly',
     pwaThemeColor: '#000000'
   });
 
   // Load settings from localStorage on mount
   useEffect(() => {
-    const savedSettings = localStorage.getItem('textProcessorSettings');
+    const savedSettings = localStorage.getItem('accentAllySettings');
     if (savedSettings) {
       setSettings(JSON.parse(savedSettings));
     }
@@ -47,7 +47,7 @@ export function Settings() {
   const updateSettings = async (newSettings: Partial<Settings>) => {
     const updatedSettings = { ...settings, ...newSettings };
     setSettings(updatedSettings);
-    localStorage.setItem('textProcessorSettings', JSON.stringify(updatedSettings));
+    localStorage.setItem('accentAllySettings', JSON.stringify(updatedSettings));
 
     // Update manifest.json with new PWA settings
     try {

@@ -8,7 +8,7 @@ interface TextEntry {
 
 class TextHistoryDB {
   private db: IDBDatabase | null = null;
-  private readonly DB_NAME = 'localtone-db';
+  private readonly DB_NAME = 'accent-ally-db';
   private readonly STORE_NAME = 'text-history';
   private readonly VERSION = 1;
 

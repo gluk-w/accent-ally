@@ -1,3 +1,4 @@
+.idea
 node_modules
 # dist
 .DS_Store
@@ -6,3 +7,4 @@ vite.config.ts.*
 *.tar.gz
 
 .wrangler
+worker/.dev.vars

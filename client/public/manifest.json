@@ -1,7 +1,7 @@
 {
-  "name": "LocalTone",
-  "short_name": "LocalTone",
-  "description": "Adopt a local American tone",
+  "name": "AccentAlly",
+  "short_name": "AccentAlly",
+  "description": "Adopt a local tone (American, British, Canadian and etc.)",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

@@ -51,10 +51,10 @@ export default function Home() {
   const mutation = useMutation({
     mutationFn: async (text: string) => {
       const settings = JSON.parse(
-        localStorage.getItem("localToneSettings") || "{}",
+        localStorage.getItem("accentAllySettings") || "{}",
       );
 
-      const response = await fetch("https://api.localtone.ai", {
+      const response = await fetch("https://api.accentally.net", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -138,7 +138,7 @@ export default function Home() {
         <CardContent className="pt-6 space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold text-foreground">Local Tone</h1>
+              <h1 className="text-2xl font-bold text-foreground">Accent Ally</h1>
               <p className="text-sm text-muted-foreground">
                 Enter your text below and press Cmd+Enter or click the arrow to
                 process.

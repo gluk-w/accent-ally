@@ -1,4 +1,4 @@
-const CACHE_NAME = "localtone-v1";
+const CACHE_NAME = "accentally-v1";
 const STATIC_ASSETS = [
   "/",
   "/index.html",

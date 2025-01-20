@@ -1,0 +1,20 @@
+name = "accent-ally-api"
+main = "worker.ts"
+compatibility_date = "2024-01-14"
+keep_vars = true
+
+[vars]
+# The API key will be set through the Cloudflare dashboard or CLI
+# ANTHROPIC_API_KEY = "your-api-key"
+
+# Development environment variables
+[env.development]
+vars = { ENVIRONMENT = "development" }
+
+# Production environment variables
+[env.production]
+vars = { ENVIRONMENT = "production" }
+routes = [
+  { pattern = "api.accentally.net/*", script = "worker.ts" }
+]
+
