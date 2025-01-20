@@ -1,5 +1,5 @@
 import { AnimatePresence } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { HistoryItem } from "./HistoryItem";
 import { TextEntry } from "@/types/history";
 
