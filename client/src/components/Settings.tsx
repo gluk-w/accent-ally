@@ -124,50 +124,6 @@ export function Settings() {
               </SelectContent>
             </Select>
           </div>
-
-          {/* PWA Settings */}
-          <div className="pt-4 border-t">
-            <h3 className="text-sm font-medium mb-4">PWA Settings</h3>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="pwa-name">App Name</Label>
-                <Input
-                  id="pwa-name"
-                  value={settings.pwaName}
-                  onChange={(e) => updateSettings({ pwaName: e.target.value })}
-                  placeholder="Enter app name"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="pwa-short-name">Short Name</Label>
-                <Input
-                  id="pwa-short-name"
-                  value={settings.pwaShortName}
-                  onChange={(e) => updateSettings({ pwaShortName: e.target.value })}
-                  placeholder="Enter short name"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="pwa-theme-color">Theme Color</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="pwa-theme-color"
-                    type="color"
-                    value={settings.pwaThemeColor}
-                    onChange={(e) => updateSettings({ pwaThemeColor: e.target.value })}
-                    className="w-16 p-1 h-10"
-                  />
-                  <Input
-                    type="text"
-                    value={settings.pwaThemeColor}
-                    onChange={(e) => updateSettings({ pwaThemeColor: e.target.value })}
-                    placeholder="#000000"
-                    className="flex-1"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </DialogContent>
     </Dialog>
