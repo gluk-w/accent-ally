@@ -1,37 +1,28 @@
-import { Router } from 'express';
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { db } from "@db";
 
 export function registerRoutes(app: Express): Server {
-  // Health check endpoint
-  app.get('/api/health', (_req, res) => {
-    res.json({ status: 'ok' });
-  });
+  const httpServer = createServer(app);
 
-  // Text processing endpoint
-  app.post('/api/process', async (req, res) => {
+  // API routes
+  app.post("/api/text", async (req, res) => {
     try {
       const { text, context, language } = req.body;
 
-      if (!text) {
-        return res.status(400).json({ message: 'Text is required' });
-      }
+      // TODO: Replace with actual API call when LocalTone API is available
+      // For now, return a mock response
+      const mockResponse = {
+        new_text: text, // Echo back the text for now
+        explanation: "This is a placeholder response until the LocalTone API integration is complete.",
+      };
 
-      // For now, just echo back the text
-      // TODO: Implement actual text processing
-      res.json({ 
-        original_text: text,
-        processed_text: text,
-        context,
-        language
-      });
+      res.json(mockResponse);
     } catch (error) {
-      console.error('Error processing text:', error);
-      res.status(500).json({ message: 'Internal server error' });
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An error occurred" 
+      });
     }
   });
 
-  const httpServer = createServer(app);
   return httpServer;
 }

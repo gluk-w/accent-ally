@@ -29,15 +29,15 @@ interface Settings {
 export function Settings() {
   const { toast } = useToast();
   const [settings, setSettings] = useState<Settings>({
-    language: "american",
-    pwaName: "LocalTone",
-    pwaShortName: "LocalTone",
-    pwaThemeColor: "#000000",
+    language: 'american',
+    pwaName: 'LocalTone',
+    pwaShortName: 'LocalTone',
+    pwaThemeColor: '#000000'
   });
 
   // Load settings from localStorage on mount
   useEffect(() => {
-    const savedSettings = localStorage.getItem("textProcessorSettings");
+    const savedSettings = localStorage.getItem('textProcessorSettings');
     if (savedSettings) {
       setSettings(JSON.parse(savedSettings));
     }
@@ -47,12 +47,41 @@ export function Settings() {
   const updateSettings = async (newSettings: Partial<Settings>) => {
     const updatedSettings = { ...settings, ...newSettings };
     setSettings(updatedSettings);
-    localStorage.setItem(
-      "textProcessorSettings",
-      JSON.stringify(updatedSettings),
-    );
+    localStorage.setItem('textProcessorSettings', JSON.stringify(updatedSettings));
 
+    // Update manifest.json with new PWA settings
     try {
+      const manifest = {
+        name: updatedSettings.pwaName,
+        short_name: updatedSettings.pwaShortName,
+        theme_color: updatedSettings.pwaThemeColor,
+        background_color: "#ffffff",
+        display: "standalone",
+        start_url: "/",
+        icons: [
+          {
+            src: "pwa-192x192.png",
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "any maskable"
+          },
+          {
+            src: "pwa-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any maskable"
+          }
+        ]
+      };
+
+      // Trigger PWA update
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const registration of registrations) {
+          registration.update();
+        }
+      }
+
       toast({
         title: "Settings Updated",
         description: "Settings have been updated successfully.",
@@ -79,13 +108,13 @@ export function Settings() {
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="language">Language</Label>
+            <Label htmlFor="language">Language Variant</Label>
             <Select
               value={settings.language}
               onValueChange={(value) => updateSettings({ language: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select language" />
+                <SelectValue placeholder="Select language variant" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="american">American</SelectItem>
@@ -96,6 +125,7 @@ export function Settings() {
             </Select>
           </div>
 
+          {/* PWA Settings */}
           <div className="pt-4 border-t">
             <h3 className="text-sm font-medium mb-4">PWA Settings</h3>
             <div className="space-y-4">

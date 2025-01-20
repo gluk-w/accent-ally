@@ -1,16 +1,8 @@
-import { Switch, Route } from "wouter";
+import { Settings } from "@/components/Settings";
 import Home from "@/pages/Home";
-import { Toaster } from "@/components/ui/toaster";
 
 function App() {
-  return (
-    <>
-      <Switch>
-        <Route path="/" component={Home} />
-      </Switch>
-      <Toaster />
-    </>
-  );
+  return <Home />;
 }
 
 export default App;
