@@ -7,6 +7,10 @@ keep_vars = true
 # The API key will be set through the Cloudflare dashboard or CLI
 # ANTHROPIC_API_KEY = "your-api-key"
 
+[observability]
+enabled = true
+head_sampling_rate = 1
+
 # Development environment variables
 [env.development]
 vars = { ENVIRONMENT = "development" }
