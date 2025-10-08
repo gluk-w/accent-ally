@@ -3,7 +3,7 @@ import {Env} from './types';
 import {RATE_LIMIT_HEADERS, RateLimiter} from './rate';
 
 // the newest Anthropic model is "claude-3-5-sonnet-20241022" which was released October 22, 2024
-const ANTHROPIC_MODEL = 'claude-3-5-sonnet-20241022';
+const ANTHROPIC_MODEL = 'claude-sonnet-4-5-20250929';
 
 const rateLimiter = new RateLimiter();
 
