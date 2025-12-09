@@ -121,6 +121,7 @@ export function Settings() {
                 <SelectItem value="australian">Australian</SelectItem>
                 <SelectItem value="british">British</SelectItem>
                 <SelectItem value="canadian">Canadian</SelectItem>
+                <SelectItem value="shakespeare">Shakespeare</SelectItem>
               </SelectContent>
             </Select>
           </div>
