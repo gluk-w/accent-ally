@@ -2,8 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import {Env} from './types';
 import {RATE_LIMIT_HEADERS, RateLimiter} from './rate';
 
-// the newest Anthropic model is "claude-3-5-sonnet-20241022" which was released October 22, 2024
-const ANTHROPIC_MODEL = 'claude-sonnet-4-5-20250929';
+const ANTHROPIC_MODEL = 'claude-sonnet-5-5';
 
 const rateLimiter = new RateLimiter();
 
@@ -108,9 +107,14 @@ async function callAnthropicAPI(env: Env, systemPrompt: string, userPrompt: stri
     const response = await anthropic.messages.create({
         model: ANTHROPIC_MODEL,
         system: systemPrompt,
-        max_tokens: 1024,
+        // Sonnet 5.5 thinks by default, and thinking counts toward max_tokens.
+        max_tokens: 16000,
         messages: [{role: 'user', content: userPrompt}],
     });
+
+    if (response.stop_reason === 'refusal') {
+        throw new Error('The model declined to process this request');
+    }
 
     let responseContent = '';
     for (const content of response.content) {
